@@ -1,10 +1,8 @@
 use crate::{
-    action::{
-        Action, ActionWrapper, GetEntryKey, GetLinksKey, QueryKey, QueryPayload
-    },
+    action::{Action, ActionWrapper, GetEntryKey, GetLinksKey, QueryKey, QueryPayload},
     context::Context,
     instance::dispatch_action,
-    network::query::{GetLinksNetworkQuery,NetworkQueryResult}
+    network::query::{GetLinksNetworkQuery, NetworkQueryResult},
 };
 use futures::{future::Future, task::Poll};
 

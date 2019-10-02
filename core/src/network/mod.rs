@@ -7,8 +7,7 @@ pub mod state;
 #[cfg(test)]
 pub mod test_utils;
 
-pub use holochain_core_types::network::query;
-pub use holochain_core_types::network::entry_aspect;
+pub use holochain_core_types::network::{entry_aspect, query};
 
 #[cfg(test)]
 pub mod tests {
@@ -17,11 +16,14 @@ pub mod tests {
         instance::tests::test_instance_and_context_by_name,
         network::{
             actions::{
-                query::{query, QueryMethod},
                 get_validation_package::get_validation_package,
                 publish::publish,
+                query::{query, QueryMethod},
             },
-            query::{GetLinksNetworkQuery, GetLinksNetworkResult, GetLinksQueryConfiguration,NetworkQueryResult},
+            query::{
+                GetLinksNetworkQuery, GetLinksNetworkResult, GetLinksQueryConfiguration,
+                NetworkQueryResult,
+            },
             test_utils::test_wat_always_valid,
         },
         workflows::author_entry::author_entry,
@@ -306,7 +308,10 @@ pub mod tests {
 
         assert!(maybe_links.is_ok());
         let link_results = maybe_links.unwrap();
-        let links = match link_results {NetworkQueryResult::Links(query,_,_)=>query,_=>panic!("Could not get query")};
+        let links = match link_results {
+            NetworkQueryResult::Links(query, _, _) => query,
+            _ => panic!("Could not get query"),
+        };
         let links = unwrap_to!(links=>GetLinksNetworkResult::Links);
         assert_eq!(links.len(), 2, "links = {:?}", links);
         // can be in any order

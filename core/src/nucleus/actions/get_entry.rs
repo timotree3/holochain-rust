@@ -7,7 +7,10 @@ use holochain_core_types::{
 };
 
 use holochain_persistence_api::{
-    cas::{content::{Address, AddressableContent}, storage::ContentAddressableStorage},
+    cas::{
+        content::{Address, AddressableContent},
+        storage::ContentAddressableStorage,
+    },
     eav::IndexFilter,
 };
 

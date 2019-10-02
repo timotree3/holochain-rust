@@ -1,4 +1,3 @@
-pub mod query;
 pub mod get_validation_package;
 pub mod handle_custom_send_response;
 pub mod handle_get_result;
@@ -6,11 +5,12 @@ pub mod handle_get_validation_package;
 pub mod init;
 pub mod publish;
 pub mod publish_header_entry;
+pub mod query;
 pub mod resolve_direct_connection;
 pub mod respond_authoring_list;
 pub mod respond_fetch;
-pub mod respond_query;
 pub mod respond_gossip_list;
+pub mod respond_query;
 pub mod send_direct_message;
 pub mod shutdown;
 
@@ -19,7 +19,6 @@ use crate::{
     network::{
         direct_message::DirectMessage,
         reducers::{
-            query::{reduce_query, reduce_query_timeout},
             get_validation_package::reduce_get_validation_package,
             handle_custom_send_response::reduce_handle_custom_send_response,
             handle_get_result::reduce_handle_get_result,
@@ -27,11 +26,12 @@ use crate::{
             init::reduce_init,
             publish::reduce_publish,
             publish_header_entry::reduce_publish_header_entry,
+            query::{reduce_query, reduce_query_timeout},
             resolve_direct_connection::reduce_resolve_direct_connection,
             respond_authoring_list::reduce_respond_authoring_list,
             respond_fetch::reduce_respond_fetch_data,
-            respond_query::reduce_respond_query,
             respond_gossip_list::reduce_respond_gossip_list,
+            respond_query::reduce_respond_query,
             send_direct_message::{reduce_send_direct_message, reduce_send_direct_message_timeout},
             shutdown::reduce_shutdown,
         },
@@ -105,9 +105,7 @@ pub fn send(
                 .send(json_message)
                 .map_err(|error| HolochainError::IoError(error.to_string()))
         })
-        .ok_or_else(|| HolochainError::ErrorGeneric(
-            "Network not initialized".to_string(),
-        ))?
+        .ok_or_else(|| HolochainError::ErrorGeneric("Network not initialized".to_string()))?
 }
 
 /// Sends the given DirectMessage to the node given by to_agent_id.

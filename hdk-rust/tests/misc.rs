@@ -611,7 +611,7 @@ fn test_signal() {
                 recieved_signal
                     == &UserSignal {
                         name: String::from("test-signal"),
-                        arguments: JsonString::from(r#"{"message":"test message"}"#)
+                        arguments: JsonString::from(r#"{"message":"test message"}"#),
                     }
             }
             _ => false,

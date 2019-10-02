@@ -51,7 +51,8 @@ pub fn invoke_call(runtime: &mut Runtime, args: &RuntimeArgs) -> ZomeApiResult {
         Ok(input) => input,
         // Exit on error
         Err(_) => {
-            log_error!(context,
+            log_error!(
+                context,
                 "zome: invoke_call failed to deserialize: {:?}",
                 args_str
             );
@@ -59,7 +60,7 @@ pub fn invoke_call(runtime: &mut Runtime, args: &RuntimeArgs) -> ZomeApiResult {
         }
     };
 
-    let result = if input.instance_handle ==THIS_INSTANCE {
+    let result = if input.instance_handle == THIS_INSTANCE {
         // ZomeFnCallArgs to ZomeFnCall
         let zome_call = ZomeFnCall::from_args(context.clone(), input.clone());
 

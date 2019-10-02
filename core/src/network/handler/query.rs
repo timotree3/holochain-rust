@@ -104,9 +104,11 @@ fn get_links(
                         "Single Entry required for Get Entry".to_string(),
                     )),
                 })
-                .unwrap_or_else(|_| Err(HolochainError::ErrorGeneric(
-                    "Could Not Get Entry for Link Data".to_string(),
-                )))
+                .unwrap_or_else(|_| {
+                    Err(HolochainError::ErrorGeneric(
+                        "Could Not Get Entry for Link Data".to_string(),
+                    ))
+                })
         })
         .partition(Result::is_ok);
 
@@ -193,9 +195,11 @@ pub fn handle_query_entry_data(query_data: QueryEntryData, context: Arc<Context>
             ActionWrapper::new(Action::RespondQuery((query_data, respond_get)))
         }
         err => {
-            log_error!(context,
+            log_error!(
+                context,
                 "net: Error ({:?}) deserializing Query {:?}",
-                err, query_json
+                err,
+                query_json
             );
             return;
         }
@@ -220,8 +224,7 @@ pub fn handle_query_entry_result(query_result_data: QueryEntryResultData, contex
             )))
         }
         Ok(NetworkQueryResult::Links(links_result, link_type, tag)) => {
-            let payload =
-                NetworkQueryResult::Links(links_result, link_type.clone(), tag.clone());
+            let payload = NetworkQueryResult::Links(links_result, link_type.clone(), tag.clone());
             ActionWrapper::new(Action::HandleQuery((
                 payload,
                 QueryKey::Links(GetLinksKey {
@@ -233,9 +236,11 @@ pub fn handle_query_entry_result(query_result_data: QueryEntryResultData, contex
             )))
         }
         err => {
-            log_error!(context,
+            log_error!(
+                context,
                 "net: Error ({:?}) deserializing QueryResult {:?}",
-                err, query_result_json
+                err,
+                query_result_json
             );
             return;
         }

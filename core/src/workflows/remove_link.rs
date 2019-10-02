@@ -32,7 +32,8 @@ pub async fn remove_link_workflow(
 
     log_debug!(context, "workflow/remove_link: {:?}", link);
     // 1. Get hold of validation package
-    log_debug!(context,
+    log_debug!(
+        context,
         "workflow/remove_link: getting validation package..."
     );
     let maybe_validation_package = await!(validation_package(&entry_with_header, context.clone()))
@@ -95,7 +96,11 @@ pub async fn remove_link_workflow(
 
     //4. store link_remove entry so we have all we need to respond to get links queries without any other network look-up```
     await!(hold_entry_workflow(&entry_with_header, context.clone()))?;
-    log_debug!(context, "workflow/hold_entry: added! {:?}", entry_with_header);
+    log_debug!(
+        context,
+        "workflow/hold_entry: added! {:?}",
+        entry_with_header
+    );
 
     Ok(())
 }

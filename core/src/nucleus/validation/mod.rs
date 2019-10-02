@@ -124,7 +124,7 @@ pub async fn validate_entry(
         )),
 
         // chain headers always pass for now. In future this should check that the entry is valid
-        EntryType::ChainHeader => Ok(()), 
+        EntryType::ChainHeader => Ok(()),
 
         _ => Err(ValidationError::NotImplemented),
     }
@@ -148,14 +148,18 @@ pub fn entry_to_validation_data(
                             validation_data: validation_data.clone(),
                         })
                     })
-                    .unwrap_or_else(|_| Err(HolochainError::ErrorGeneric(
-                        "Could not find Entry".to_string(),
-                    )))
+                    .unwrap_or_else(|_| {
+                        Err(HolochainError::ErrorGeneric(
+                            "Could not find Entry".to_string(),
+                        ))
+                    })
             })
-            .unwrap_or_else(|| Ok(EntryValidationData::Create {
-                entry: entry.clone(),
-                validation_data: validation_data.clone(),
-            })),
+            .unwrap_or_else(|| {
+                Ok(EntryValidationData::Create {
+                    entry: entry.clone(),
+                    validation_data: validation_data.clone(),
+                })
+            }),
         Entry::Deletion(deletion_entry) => {
             let deletion_address = deletion_entry.clone().deleted_entry_address();
             get_entry_with_header(context.clone(), &deletion_address)
@@ -166,9 +170,11 @@ pub fn entry_to_validation_data(
                         validation_data: validation_data.clone(),
                     })
                 })
-                .unwrap_or_else(|_| Err(HolochainError::ErrorGeneric(
-                    "Could not find Entry".to_string(),
-                )))
+                .unwrap_or_else(|_| {
+                    Err(HolochainError::ErrorGeneric(
+                        "Could not find Entry".to_string(),
+                    ))
+                })
         }
         Entry::CapTokenGrant(_) => Ok(EntryValidationData::Create {
             entry: entry.clone(),

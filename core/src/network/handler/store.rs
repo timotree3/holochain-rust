@@ -21,7 +21,10 @@ pub fn handle_store(dht_data: StoreEntryAspectData, context: Arc<Context>) {
     if let Ok(aspect) = aspect_json.clone().try_into() {
         match aspect {
             EntryAspect::Content(entry, header) => {
-                log_debug!(context, "net/handle: handle_store: Got EntryAspect::Content. processing...");
+                log_debug!(
+                    context,
+                    "net/handle: handle_store: Got EntryAspect::Content. processing..."
+                );
                 let entry_with_header = EntryWithHeader { entry, header };
                 thread::Builder::new()
                     .name(format!(
@@ -42,7 +45,10 @@ pub fn handle_store(dht_data: StoreEntryAspectData, context: Arc<Context>) {
                 panic!(format!("unimplemented store aspect Header: {:?}", header));
             }
             EntryAspect::LinkAdd(link_data, header) => {
-                log_debug!(context, "net/handle: handle_store: Got EntryAspect::LinkAdd. processing...");
+                log_debug!(
+                    context,
+                    "net/handle: handle_store: Got EntryAspect::LinkAdd. processing..."
+                );
                 let entry = Entry::LinkAdd(link_data);
                 if entry.address() != *header.entry_address() {
                     log_error!(context, "net/handle: handle_store: Got EntryAspect::LinkAdd with non-matching LinkData and ChainHeader! Hash of content in header does not match content! Ignoring.");
@@ -65,7 +71,8 @@ pub fn handle_store(dht_data: StoreEntryAspectData, context: Arc<Context>) {
                     .expect("Could not spawn thread for storing EntryAspect::LinkAdd");
             }
             EntryAspect::LinkRemove((link_data, links_to_remove), header) => {
-                log_debug!(context, 
+                log_debug!(
+                    context,
                     "net/handle: handle_store: Got EntryAspect::LinkRemove. processing...",
                 );
                 let entry = Entry::LinkRemove((link_data, links_to_remove));
@@ -85,7 +92,10 @@ pub fn handle_store(dht_data: StoreEntryAspectData, context: Arc<Context>) {
                     .expect("Could not spawn thread for storing EntryAspect::LinkRemove");
             }
             EntryAspect::Update(entry, header) => {
-                log_debug!(context, "net/handle: handle_store: Got EntryAspect::Update. processing...");
+                log_debug!(
+                    context,
+                    "net/handle: handle_store: Got EntryAspect::Update. processing..."
+                );
                 let entry_with_header = EntryWithHeader { entry, header };
                 thread::Builder::new()
                     .name(format!(
@@ -102,7 +112,8 @@ pub fn handle_store(dht_data: StoreEntryAspectData, context: Arc<Context>) {
                     .expect("Could not spawn thread for storing EntryAspect::Update");
             }
             EntryAspect::Deletion(header) => {
-                log_debug!(context, 
+                log_debug!(
+                    context,
                     "net/handle: handle_store: Got EntryAspect::Deletion. processing...",
                 );
                 // reconstruct the deletion entry from the header.
@@ -132,7 +143,8 @@ pub fn handle_store(dht_data: StoreEntryAspectData, context: Arc<Context>) {
             }
         }
     } else {
-        log_error!(context,
+        log_error!(
+            context,
             "net/handle_store: Unable to parse entry aspect: {}",
             aspect_json
         )

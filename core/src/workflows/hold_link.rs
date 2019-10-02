@@ -99,7 +99,11 @@ pub async fn hold_link_workflow(
 
     //4. store link_add entry so we have all we need to respond to get links queries without any other network look-up
     await!(hold_entry_workflow(&entry_with_header, context.clone()))?;
-    log_debug!(context, "workflow/hold_entry: added! {:?}", entry_with_header);
+    log_debug!(
+        context,
+        "workflow/hold_entry: added! {:?}",
+        entry_with_header
+    );
 
     //5. Link has been added to EAV and LinkAdd Entry has been stored on the dht
     Ok(())
@@ -110,9 +114,11 @@ pub async fn hold_link_workflow(
 // too slow!
 pub mod tests {
     use super::*;
-    use crate::{ nucleus::actions::tests::*, workflows::author_entry::author_entry,
+    use crate::{nucleus::actions::tests::*, workflows::author_entry::author_entry};
+    use holochain_core_types::{
+        agent::test_agent_id, chain_header::test_chain_header, entry::test_entry_with_value,
+        link::link_data::LinkData,
     };
-    use holochain_core_types::{chain_header::test_chain_header,agent::test_agent_id,link::link_data::LinkData, entry::test_entry_with_value};
 
     #[test]
     /// Test that an invalid link will be rejected by this workflow.
@@ -134,12 +140,12 @@ pub mod tests {
         let (_, context1) =
             test_instance_with_spoofed_dna(hacked_dna, dna_address, "alice").unwrap();
         let netname = Some("test_reject_invalid_link_on_remove_workflow");
-  
+
         // Commit entry on attackers node
         let entry = test_entry_with_value("{\"stuff\":\"test entry value\"}");
-        
+
         let entry_address = context1
-            .block_on(author_entry(&entry, None, &context1,&Vec::new()))
+            .block_on(author_entry(&entry, None, &context1, &Vec::new()))
             .unwrap();
 
         let link_add = LinkData::new_add(
@@ -151,9 +157,9 @@ pub mod tests {
             test_agent_id(),
         );
         let link_entry = Entry::LinkAdd(link_add);
-  
+
         let _ = context1
-            .block_on(author_entry(&link_entry, None, &context1,&Vec::new()))
+            .block_on(author_entry(&link_entry, None, &context1, &Vec::new()))
             .unwrap();
 
         // Get header which we need to trigger hold_entry_workflow
@@ -165,13 +171,13 @@ pub mod tests {
             entry: link_entry,
             header,
         };
-      
+
         // Call hold_entry_workflow on victim DHT node
         let result = context2.block_on(hold_link_workflow(&entry_with_header, context2.clone()));
 
         // ... and expect validation to fail with message defined in test WAT:
         assert!(result.is_err());
-        
+
         assert_eq!(
             result.err().unwrap(),
             HolochainError::ValidationFailed(String::from("FAIL wat")),

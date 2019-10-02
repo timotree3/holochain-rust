@@ -1,14 +1,11 @@
 use crate::{
     agent::actions::commit::commit_entry,
     context::Context,
-    network::actions::{
-        publish::publish,
-        publish_header_entry::publish_header_entry,
-    },
+    entry::CanPublish,
+    network::actions::{publish::publish, publish_header_entry::publish_header_entry},
     nucleus::{
         actions::build_validation_package::build_validation_package, validation::validate_entry,
     },
-    entry::CanPublish,
 };
 
 use holochain_core_types::{
@@ -32,9 +29,11 @@ pub async fn author_entry<'a>(
     provenances: &'a Vec<Provenance>,
 ) -> Result<CommitEntryResult, HolochainError> {
     let address = entry.address();
-    log_debug!(context,
+    log_debug!(
+        context,
         "workflow/authoring_entry: {} with content: {:?}",
-        address, entry
+        address,
+        entry
     );
 
     // 0. If we are trying to author a link or link removal, make sure the linked entries exist:
@@ -57,7 +56,8 @@ pub async fn author_entry<'a>(
     };
 
     // 2. Validate the entry
-    log_debug!(context,
+    log_debug!(
+        context,
         "workflow/authoring_entry/{}: validating...",
         address
     );
@@ -70,7 +70,8 @@ pub async fn author_entry<'a>(
     log_debug!(context, "worflow/authoring_entry {}: is valid!", address);
 
     // 3. Commit the entry
-    log_debug!(context,
+    log_debug!(
+        context,
         "workflow/authoring_entry/{}: committing...",
         address
     );
@@ -83,38 +84,44 @@ pub async fn author_entry<'a>(
 
     // 4. Publish the valid entry to DHT. This will call Hold to itself
     if entry.entry_type().can_publish(context) {
-        log_debug!(context,
+        log_debug!(
+            context,
             "workflow/authoring_entry/{}: publishing...",
             address
         );
         await!(publish(entry.address(), &context))?;
-        log_debug!(context,
-            "workflow/authoring_entry/{}: published!",
-            address
-        );
+        log_debug!(context, "workflow/authoring_entry/{}: published!", address);
     } else {
-        log_debug!(context,
-          "workflow/authoring_entry/{}: entry is private, no publishing",
-          address
+        log_debug!(
+            context,
+            "workflow/authoring_entry/{}: entry is private, no publishing",
+            address
         );
     }
 
     // 5. Publish the header for all types (including private entries)
-    log_debug!(context, "debug/workflow/authoring_entry/{}: publishing header...", address);
+    log_debug!(
+        context,
+        "debug/workflow/authoring_entry/{}: publishing header...",
+        address
+    );
     await!(publish_header_entry(entry.address(), &context))?;
-    log_debug!(context, "debug/workflow/authoring_entry/{}: header published!", address);
-    
+    log_debug!(
+        context,
+        "debug/workflow/authoring_entry/{}: header published!",
+        address
+    );
+
     Ok(CommitEntryResult::new(addr))
 }
 
 #[cfg(test)]
 pub mod tests {
     use super::author_entry;
-    use crate::nucleus::actions::get_entry::get_entry_from_dht;
-    use crate::nucleus::actions::tests::*;
+    use crate::nucleus::actions::{get_entry::get_entry_from_dht, tests::*};
     use holochain_core_types::{
-        entry::{test_entry_with_value, Entry},
         chain_header::ChainHeader,
+        entry::{test_entry_with_value, Entry},
     };
     use holochain_persistence_api::cas::content::AddressableContent;
     use std::{thread, time};
@@ -144,7 +151,8 @@ pub mod tests {
         while entry.is_none() && tries < 120 {
             tries = tries + 1;
             {
-                entry = get_entry_from_dht(&context2, &entry_address).expect("Could not retrieve entry from DHT");
+                entry = get_entry_from_dht(&context2, &entry_address)
+                    .expect("Could not retrieve entry from DHT");
             }
             println!("Try {}: {:?}", tries, entry);
             if entry.is_none() {
@@ -181,7 +189,8 @@ pub mod tests {
 
         // get the header from the top of Jill's chain
         let state = &context1.state().unwrap();
-        let header = state.get_headers(entry_address)
+        let header = state
+            .get_headers(entry_address)
             .expect("Could not retrieve headers from authors chain")
             .into_iter()
             .next()
@@ -194,19 +203,16 @@ pub mod tests {
         while entry.is_none() && tries < 10 {
             tries = tries + 1;
             {
-                entry = get_entry_from_dht(&context2, &header_entry.address()).expect("Could not retrieve entry from DHT");
+                entry = get_entry_from_dht(&context2, &header_entry.address())
+                    .expect("Could not retrieve entry from DHT");
             }
             println!("Try {}: {:?}", tries, entry);
             if entry.is_none() {
                 thread::sleep(time::Duration::from_millis(1000));
             }
         }
-        assert_eq!(
-            entry,
-            Some(header_entry),
-        );
+        assert_eq!(entry, Some(header_entry),);
     }
-
 
     #[test]
     /// test that all headers are published so an agents local chain can be reconstructed by another agent
@@ -244,11 +250,10 @@ pub mod tests {
 
         // collect Jills local chain
         let state = &context1.state().unwrap();
-        let jill_headers: Vec<ChainHeader> = state
-            .agent()
-            .iter_chain()
-            .collect();
-        let header = jill_headers.first().expect("Must be at least one header in chain");
+        let jill_headers: Vec<ChainHeader> = state.agent().iter_chain().collect();
+        let header = jill_headers
+            .first()
+            .expect("Must be at least one header in chain");
 
         // jack retrieves the top header addresss and reconstructs the Jills local chain by following the header back-links
         let mut jack_headers: Vec<ChainHeader> = Vec::new();
@@ -259,33 +264,31 @@ pub mod tests {
             while entry.is_none() && tries < 10 {
                 tries = tries + 1;
                 {
-                    entry = get_entry_from_dht(&context2, &next_header_addr).expect("Could not retrieve entry from DHT");
+                    entry = get_entry_from_dht(&context2, &next_header_addr)
+                        .expect("Could not retrieve entry from DHT");
                 }
                 println!("Try {}: {:?}", tries, entry);
                 if entry.is_none() {
                     thread::sleep(time::Duration::from_millis(1000));
                 }
-            }   
+            }
             if let Some(Entry::ChainHeader(header)) = entry {
                 jack_headers.push(header.clone());
                 if let Some(next_addr) = header.link() {
                     next_header_addr = next_addr
                 } else {
-                    break // chain has been followed to the genesis entry
+                    break; // chain has been followed to the genesis entry
                 }
             } else {
-                panic!(format!("Could not retrieve header at address: {}", next_header_addr))
+                panic!(format!(
+                    "Could not retrieve header at address: {}",
+                    next_header_addr
+                ))
             }
         }
 
-        assert_eq!(
-            jack_headers.len(),
-            4,
-        );
+        assert_eq!(jack_headers.len(), 4,);
 
-        assert_eq!(
-            jack_headers,
-            jill_headers,
-        );
+        assert_eq!(jack_headers, jill_headers,);
     }
 }

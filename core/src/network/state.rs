@@ -1,6 +1,6 @@
 use crate::{
     action::{ActionWrapper, QueryKey},
-    network::{actions::ActionResponse, direct_message::DirectMessage,query::NetworkQueryResult},
+    network::{actions::ActionResponse, direct_message::DirectMessage, query::NetworkQueryResult},
 };
 use boolinator::*;
 use holochain_core_types::{error::HolochainError, validation::ValidationPackage};

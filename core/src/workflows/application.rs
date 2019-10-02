@@ -2,16 +2,15 @@ use crate::{
     context::{get_dna_and_agent, Context},
     instance::Instance,
     network::actions::{
+        initialize_network::initialize_network, publish::publish,
         publish_header_entry::publish_header_entry,
-        publish::publish,
-        initialize_network::initialize_network,
     },
     nucleus::actions::{call_init::call_init, initialize::initialize_chain},
 };
 use holochain_core_types::{
     dna::Dna,
-    error::{HcResult, HolochainError},
     entry::Entry,
+    error::{HcResult, HolochainError},
 };
 use holochain_persistence_api::cas::content::AddressableContent;
 use std::sync::Arc;
@@ -28,12 +27,16 @@ pub async fn initialize(
     let first_initialization = match await!(get_dna_and_agent(&instance_context)) {
         Ok(_) => false,
         Err(err) => {
-            log_debug!(context,
+            log_debug!(
+                context,
                 "dna/initialize: No DNA and agent in chain so assuming uninitialized: {:?}",
                 err
             );
             await!(initialize_chain(dna.clone(), &instance_context))?;
-            log_debug!(context, "dna/initialize: Initializing new chain from given DNA...");
+            log_debug!(
+                context,
+                "dna/initialize: Initializing new chain from given DNA..."
+            );
             true
         }
     };
@@ -42,7 +45,7 @@ pub async fn initialize(
     await!(initialize_network(&instance_context))?;
 
     if first_initialization {
-        // 4. (first initialization only) Publish the agent entry and headers of the agent and DNA entries. 
+        // 4. (first initialization only) Publish the agent entry and headers of the agent and DNA entries.
         await!(publish(context.agent_id.address(), &context))?;
 
         let dna_entry = Entry::Dna(Box::new(dna.clone()));

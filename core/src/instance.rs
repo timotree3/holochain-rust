@@ -25,12 +25,13 @@ use holochain_core_types::{
 use holochain_persistence_api::cas::content::Address;
 use snowflake::ProcessUniqueId;
 use std::{
-    sync::{Arc, Mutex, RwLock, RwLockReadGuard},
+    sync::{
+        atomic::Ordering::{self, Relaxed},
+        Arc, Mutex, RwLock, RwLockReadGuard,
+    },
     thread,
     time::Duration,
 };
-use std::sync::atomic::Ordering::Relaxed;
-use std::sync::atomic::Ordering;
 
 pub const RECV_DEFAULT_TIMEOUT_MS: Duration = Duration::from_millis(10000);
 
@@ -100,15 +101,13 @@ impl Instance {
         context: Arc<Context>,
     ) -> HcResult<Arc<Context>> {
         let context = self.inner_setup(context);
-        context.block_on(
-            async {
-                await!(initialize_chain(dna.clone(), &context))?;
-                await!(initialize_network_with_spoofed_dna(
-                    spoofed_dna_address,
-                    &context
-                ))
-            },
-        )?;
+        context.block_on(async {
+            await!(initialize_chain(dna.clone(), &context))?;
+            await!(initialize_network_with_spoofed_dna(
+                spoofed_dna_address,
+                &context
+            ))
+        })?;
         Ok(context)
     }
 
@@ -280,18 +279,19 @@ impl Instance {
                 );
             });
 
-            if let Some(signal) = self.consistency_model
+            if let Some(signal) = self
+                .consistency_model
                 .process_action(action_wrapper.action())
             {
-                tx.send(Signal::Consistency(signal.into())).unwrap_or_else(|e| {
-                            log_warn!(
-                                context,
-                                "reduce: Signal channel is closed! No signals can be sent ({:?}).",
-                                e
-                            );
-                });
+                tx.send(Signal::Consistency(signal.into()))
+                    .unwrap_or_else(|e| {
+                        log_warn!(
+                            context,
+                            "reduce: Signal channel is closed! No signals can be sent ({:?}).",
+                            e
+                        );
+                    });
             }
-
         }
     }
 
@@ -329,9 +329,7 @@ impl Instance {
     pub fn save(&self) -> HcResult<()> {
         self.persister
             .as_ref()
-            .ok_or_else(||HolochainError::new(
-                "Instance::save() called without persister set.",
-            ))?
+            .ok_or_else(|| HolochainError::new("Instance::save() called without persister set."))?
             .try_lock()
             .map_err(|_| HolochainError::new("Could not get lock on persister"))?
             .save(&self.state())
