@@ -59,7 +59,7 @@ pub unsafe extern "C" fn holochain_load(storage_path: CStrPtr) -> *mut Holochain
     }
 }
 
-fn get_context(path: &String) -> Result<Context, HolochainError> {
+fn get_context(path: &str) -> Result<Context, HolochainError> {
     let agent = AgentId::generate_fake("c_bob");
     Ok(ContextBuilder::new()
         .with_agent(agent)

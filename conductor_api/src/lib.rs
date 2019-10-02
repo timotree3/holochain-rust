@@ -82,7 +82,7 @@
 ///     Ok(conductor)
 /// }
 ///
-/// fn load_config_file(path: &String) -> Result<Configuration, HolochainError> {
+/// fn load_config_file(path: &str) -> Result<Configuration, HolochainError> {
 ///     let mut f = File::open(path)?;
 ///     let mut contents = String::new();
 ///     f.read_to_string(&mut contents)?;
