@@ -55,7 +55,9 @@ fn main() {
     }
 
     loop {
+        coz::begin!("process");
         let result = sim2h.process();
+        coz::end!("process");
         match result {
             Err(e) => {
                 if e.to_string().contains("Bind error:") {

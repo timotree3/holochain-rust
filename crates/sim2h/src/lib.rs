@@ -927,7 +927,7 @@ impl Sim2h {
             debug!(".");
             self.num_ticks = 0;
         }
-
+        coz::begin!("try_recv");
         match self.tp_recv.try_recv() {
             Ok(PoolTask::Disconnect(disconnects)) => {
                 for url in disconnects {
@@ -941,9 +941,15 @@ impl Sim2h {
             }
             _ => (),
         };
+        coz::end!("try_recv");
 
+        coz::begin!("connections");
         let did_work_1 = self.priv_check_incoming_connections();
+        coz::end!("connections");
+        coz::begin!("messages");
         let did_work_2 = self.priv_check_incoming_messages();
+        coz::end!("messages");
+        coz::begin!("rest");
         let did_work = did_work_1 || did_work_2;
 
         if std::time::Instant::now() >= self.rrdht_arc_radius_recalc {
@@ -966,7 +972,7 @@ impl Sim2h {
 
             self.retry_sync_missing_aspects();
         }
-
+        coz::end!("rest");
         Ok(did_work)
     }
 
